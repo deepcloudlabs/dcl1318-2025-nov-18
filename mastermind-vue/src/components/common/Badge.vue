@@ -23,7 +23,7 @@ defineProps({
 
 <template>
   <div class="mb-3">
-    <h5 v-if="!displayOnly">{{label}}:<span :class='["badge", `bg-${color}`]'>{{value}}</span></h5>
+    <h5 v-if="!displayOnly"><span class="pe-2">{{label}}:</span><span :class='["badge", `bg-${color}`]'>{{value}}</span></h5>
     <h5 v-if="displayOnly"><span :class='["badge", `bg-${color}`]'>{{value}}</span></h5>
   </div>
 </template>
