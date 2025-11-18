@@ -1,5 +1,19 @@
-# Vue 3 + Vite
+# Mastermind
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Rules
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+lives: 3 -> 5 -> 7 ...
+
+level: 3 .. 10
+
+max_moves: 10 -> 15 -> 20
+
+counter: 60 -> 80 -> 100 ...
+
+secret: 549
+
+player -> 123 : No match
+          456 : -2
+          574 : -1+1
+          548 : +2
+          549 : +3 -> game level -> 4
