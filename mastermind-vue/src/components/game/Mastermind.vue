@@ -12,6 +12,9 @@ import Column from "../common/Column.vue";
 import ProgressBar from "../common/ProgressBar.vue";
 import createSecret, {evaluateMove} from "../../utils/mastermind-utils.js";
 import Table from "../common/Table.vue";
+import Container from "../common/Container.vue";
+import router from "../../router/index.js";
+
 const LOCAL_STORAGE_KEY = "game-mastermind-vue";
 
 const game = reactive({
@@ -46,6 +49,10 @@ const game = reactive({
 });
  */
 //endregion
+function saveStateToLocalStorage() {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(game));
+}
+
 function nextGameLevel() {
   game.level++;
   game.max_moves += 5;
@@ -55,6 +62,7 @@ function nextGameLevel() {
   game.moves = [];
   game.counter = game.max_counter;
   game.secret = createSecret(game.level);
+  saveStateToLocalStorage();
 }
 
 function initGameLevel() {
@@ -62,13 +70,26 @@ function initGameLevel() {
   game.moves = [];
   game.counter = game.max_counter;
   game.secret = createSecret(game.level);
+  saveStateToLocalStorage();
+}
+
+function resetGame() {
+  game.level = 3;
+  game.tries = 0;
+  game.lives = 3;
+  game.moves = [];
+  game.max_moves = 10;
+  game.max_counter = 60;
+  game.counter = game.max_counter;
+  game.secret = createSecret(game.level);
+  saveStateToLocalStorage();
 }
 
 function play() {
-  // TODO
   if (Number(game.guess) === game.secret) {
     if (game.level === game.max_level) {
-      //TODO: player wins!
+      resetGame();
+      router.push("/wins");
     } else {
       nextGameLevel();
     }
@@ -76,7 +97,8 @@ function play() {
     game.tries++;
     if (game.tries === game.max_moves) {
       if (game.lives === 0) {
-        //TODO: player loses!
+        resetGame();
+        router.push("/loses");
       } else {
         game.lives--;
         initGameLevel();
@@ -92,23 +114,24 @@ let timerId = null;
 onMounted(() => {
   let localState = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (localState) {
-     localState = JSON.parse(localState);
-     for (let field in localState) {
-         if(game.hasOwnProperty(field)) {
-           game[field] = localState[field];
-         }
-     }
+    localState = JSON.parse(localState);
+    for (let field in localState) {
+      if (game.hasOwnProperty(field)) {
+        game[field] = localState[field];
+      }
+    }
   }
   timerId = setInterval(() => {
     game.counter--;
-    if (game.counter <= 0){
-      if (game.lives === 0){
-        //TODO: player loses!
+    if (game.counter <= 0) {
+      if (game.lives === 0) {
+        resetGame();
+        router.push("/loses");
       }
       game.lives--;
       initGameLevel();
     }
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(game));
+    saveStateToLocalStorage();
   }, 1_000);
 });
 
@@ -139,33 +162,35 @@ const MoveFields = [
 </script>
 
 <template>
-  <Row>
-    <Column>
-      <Card title="Game Console">
-        <Badge color="primary" label="Game Level" :value="game.level"></Badge>
-        <Badge color="success" label="Lives" :value="game.lives"></Badge>
-        <Badge color="warning" label="Tries" :value="game.tries"></Badge>
-        <ProgressBar :value="triesLeft" :max-value="game.max_moves"/>
-        <Badge color="danger" label="Counter" :value="game.counter"></Badge>
-        <ProgressBar :value="game.counter"
-                     :maxValue="game.max_counter"/>
-        <InputText id="guess"
-                   v-model="game.guess"
-                   label="Guess"
-                   placeholder="Enter your guess">
-          <Button @click="play" label="Play"/>
-        </InputText>
-      </Card>
-    </Column>
-    <Column>
-      <Card title="Game History">
-        <Table :items="game.moves"
-               table-color="danger"
-               :columns="HistoryTableColumnNames"
-               :fields="MoveFields"/>
-      </Card>
-    </Column>
-  </Row>
+  <Container>
+    <Row>
+      <Column>
+        <Card title="Game Console">
+          <Badge color="primary" label="Game Level" :value="game.level"></Badge>
+          <Badge color="success" label="Lives" :value="game.lives"></Badge>
+          <Badge color="warning" label="Tries" :value="game.tries"></Badge>
+          <ProgressBar :value="triesLeft" :max-value="game.max_moves"/>
+          <Badge color="danger" label="Counter" :value="game.counter"></Badge>
+          <ProgressBar :value="game.counter"
+                       :maxValue="game.max_counter"/>
+          <InputText id="guess"
+                     v-model="game.guess"
+                     label="Guess"
+                     placeholder="Enter your guess">
+            <Button @click="play" label="Play"/>
+          </InputText>
+        </Card>
+      </Column>
+      <Column>
+        <Card title="Game History">
+          <Table :items="game.moves"
+                 table-color="danger"
+                 :columns="HistoryTableColumnNames"
+                 :fields="MoveFields"/>
+        </Card>
+      </Column>
+    </Row>
+  </Container>
 </template>
 
 <style scoped>
