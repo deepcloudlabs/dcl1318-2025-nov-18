@@ -55,8 +55,17 @@ function updateEmployee(){}
         <Photo alt="Employee's photo"
                id="photo"
                label="Employee's photo"
-               :value="hr.employee.photo"
+               v-model:value="hr.employee.photo"
                :displayOnly="false" />
+        <div class="mb-3">
+          <Button label="Hire"
+                  @click="hireEmployee"
+                  color="success" />
+          <Button label="Update"
+                  @click="updateEmployee"
+                  color="warning" />
+
+        </div>
       </Card>
     </Column>
     <Column>
