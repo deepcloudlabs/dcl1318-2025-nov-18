@@ -57,7 +57,7 @@ async function main() {
     ws.on('message', async (data) => {
         try {
             const frame = JSON.parse(data);
-            console.log(frame);
+            //console.log(frame);
             const model = {
                 symbol: frame.s,
                 price: frame.p,
