@@ -17,6 +17,7 @@ async function main() {
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-Width, Content-Type, Accept");
         next();
     });
+    // http://localhost:4001/api-docs
     const swaggerUi = require('swagger-ui-express');
     const swaggerDocument = require('./swagger');
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

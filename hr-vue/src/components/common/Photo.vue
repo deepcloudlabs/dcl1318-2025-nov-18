@@ -2,7 +2,7 @@
 defineProps({
   value: { type: String, required: true },
   id: { type: String, required: true },
-  label: { type: String, required: true },
+  label: { type: String, required: false, default: "" },
   alt: { type: String, required: true },
   displayOnly: { type: Boolean, required: false, default: false },
 });
@@ -21,7 +21,6 @@ function handleFileChange(event){
 
 <template>
   <div class="mb-3" v-if="displayOnly">
-    <label :for="id" class="form-label p-2">{{ label }}:</label>
     <img class="img-thumbnail p-2"
          :id="id"
          :alt="alt"

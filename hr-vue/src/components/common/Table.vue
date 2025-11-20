@@ -1,4 +1,7 @@
 <script setup>
+import Photo from "./Photo.vue";
+import Badge from "./Badge.vue";
+
 let {tableColor} = defineProps({
   columns: {
     type: Array,
@@ -39,7 +42,18 @@ const TableClasses = [
     </thead>
     <tbody>
     <tr v-for="item in items">
-      <td v-for="field in fields">{{ item[field] }}</td>
+      <td v-for="field in fields">
+        <span v-if="field.type !== 'Photo' && !field.ui">{{ item[field.name] }}</span>
+        <Photo v-if="field.type === 'Photo'"
+               alt="Employee's Photo"
+               :value="item[field.name]"
+               :displayOnly="true"
+               :id="id"></Photo>
+        <Badge v-if="field.ui && field.ui === 'Badge'"
+               :color="field.color"
+               :value="item[field.name]"
+               :displayOnly="true"></Badge>
+      </td>
     </tr>
     </tbody>
   </table>
