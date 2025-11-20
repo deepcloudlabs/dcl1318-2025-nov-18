@@ -1,6 +1,7 @@
 <script setup>
 import Photo from "./Photo.vue";
 import Badge from "./Badge.vue";
+import Button from "./Button.vue";
 
 let {tableColor} = defineProps({
   columns: {
@@ -19,6 +20,22 @@ let {tableColor} = defineProps({
     type: String,
     required: false,
     default: "success"
+  },
+  operationClick: {
+    type: Function,
+    required: false,
+    default: null
+  },
+  operationName: {
+    type: String,
+    required: false,
+    default: ""
+  },
+  rowClick: {
+    type: Function,
+    required: false,
+    default: () => {
+    }
   }
 });
 
@@ -41,7 +58,9 @@ const TableClasses = [
     </tr>
     </thead>
     <tbody>
-    <tr v-for="item in items">
+    <tr v-for="item in items"
+        @click="()=>rowClick(item)"
+        @mouseover="()=>rowClick(item)">
       <td v-for="field in fields">
         <span v-if="field.type !== 'Photo' && !field.ui">{{ item[field.name] }}</span>
         <Photo v-if="field.type === 'Photo'"
@@ -53,6 +72,9 @@ const TableClasses = [
                :color="field.color"
                :value="item[field.name]"
                :displayOnly="true"></Badge>
+      </td>
+      <td v-if="operationClick">
+        <Button :label="operationName" @click="()=>operationClick(item)" color="danger"/>
       </td>
     </tr>
     </tbody>

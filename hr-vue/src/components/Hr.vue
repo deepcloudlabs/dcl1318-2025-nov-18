@@ -20,29 +20,31 @@ const HR_TABLE_COLUMNS = [
   "IBAN",
   "Birth Year",
   "Department",
-  "Full Time?"
+  "Full Time?",
+  "Operations"
 ];
 
 const EMPLOYEE_FIELDS = [
-  { name: "identityNo", type: "String"},
-  { name: "photo", type: "Photo" },
-  { name: "fullname", type: "String"},
-  { name: "salary", type: "Number"},
-  { name: "iban", type: "String"},
-  { name: "birthYear", type: "Number"},
-  { name: "department", type: "String", ui: "Badge", color: "warning"},
-  { name: "fulltime", type: "Boolean", ui: "Badge", color: "primary" }
+  {name: "identityNo", type: "String"},
+  {name: "photo", type: "Photo"},
+  {name: "fullname", type: "String"},
+  {name: "salary", type: "Number"},
+  {name: "iban", type: "String"},
+  {name: "birthYear", type: "Number"},
+  {name: "department", type: "String", ui: "Badge", color: "warning"},
+  {name: "fulltime", type: "Boolean", ui: "Badge", color: "primary"}
 ];
 const hr = reactive({
   employee: new Employee({}),
   departments: DEPARTMENTS,
-  employees: []
+  employees: [],
+  isPending: false
 });
 
 const HR_REST_API_BASE_URL = "http://localhost:4001/employees";
 
 function hireEmployee() {
-  fetch(HR_REST_API_BASE_URL,{
+  fetch(HR_REST_API_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -50,37 +52,95 @@ function hireEmployee() {
     },
     body: JSON.stringify(hr.employee)
   }).then(res => res.json())
-  .then(console.log)
-  .catch(console.err)
-  .finally(
-      () => console.log("Fetch API Call is complete.")
-  );
+      .then(console.log)
+      .catch(console.err)
+      .finally(
+          () => console.log("Fetch API Call is complete.")
+      );
 }
 
-function fireEmployee() {
+function fireEmployee(identityNo) {
+  let identity = identityNo ? identityNo : hr.employee.identityNo;
+  fetch(`${HR_REST_API_BASE_URL}/${identity}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json"
+    }
+  }).then(res => res.json())
+      .then(employee => {
+        hr.employee = employee;
+        hr.employees = hr.employees.filter(emp => emp["identityNo"] !== identity);
+      })
+      .catch(console.err)
+      .finally(
+          () => console.log("Fetch API Call is complete.")
+      );
 }
 
 function findEmployee() {
-  alert(hr.employee.department);
+  fetch(`${HR_REST_API_BASE_URL}/${hr.employee.identityNo}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json"
+    }
+  }).then(res => res.json())
+      .then(employee => {
+        hr.employee = employee;
+      })
+      .catch(console.err)
+      .finally(
+          () => console.log("Fetch API Call is complete.")
+      );
 }
 
 function updateEmployee() {
+  fetch(HR_REST_API_BASE_URL, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify(hr.employee)
+  }).then(res => res.json())
+      .then(res => alert(JSON.stringify(res)))
+      .catch(console.err)
+      .finally(
+          () => console.log("Fetch API Call is complete.")
+      );
 }
 
-function retrieveEmployees(){
-  fetch(HR_REST_API_BASE_URL,{
+const controller = new AbortController();
+
+async function retrieveEmployees() {
+  hr.isPending = true;
+  fetch(HR_REST_API_BASE_URL, {
     method: "GET",
+    signal: controller.signal,
     headers: {
       "Accept": "application/json"
     }
   }).then(res => res.json())
       .then(employees => {
         hr.employees = employees;
+        hr.isPending = false;
       })
       .catch(console.err)
       .finally(
           () => console.log("Fetch API Call is complete.")
       );
+}
+
+function cancelRequest() {
+  controller.abort();
+  hr.isPending = false;
+}
+
+function copyRow(employeeAtRow) {
+  hr.employee = employeeAtRow;
+}
+
+function fireEmployeeAtRow(employeeAtRow) {
+  fireEmployee(employeeAtRow.identityNo);
 }
 </script>
 
@@ -94,7 +154,9 @@ function retrieveEmployees(){
           <Button label="Find"
                   @click="findEmployee"
                   color="success"/>
-          <Button label="Fire" color="danger"/>
+          <Button label="Fire"
+                  @click="fireEmployee"
+                  color="danger"/>
         </InputText>
         <InputText id="fullname"
                    v-model:model-value="hr.employee.fullname"
@@ -137,13 +199,21 @@ function retrieveEmployees(){
             <Button label="Retrieve Employees"
                     @click="retrieveEmployees"
                     color="success"/>
+            <Button label="Cancel"
+                    v-if="hr.isPending"
+                    @click="cancelRequest"
+                    color="danger"/>
           </Column>
         </Row>
         <Row>
           <Column>
             <Table :items="hr.employees"
+                   :rowClick="copyRow"
+                   :operationClick="fireEmployeeAtRow"
+                   operationName="Fire"
                    :columns="HR_TABLE_COLUMNS"
-                   :fields="EMPLOYEE_FIELDS"/>
+                   :fields="EMPLOYEE_FIELDS">
+            </Table>
           </Column>
         </Row>
       </Card>

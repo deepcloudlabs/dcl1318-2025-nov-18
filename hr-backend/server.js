@@ -98,8 +98,12 @@ async function main() {
                 {__v: false, _id: false},
                 {skip: offset, limit: size}
             );
-
             res.type('json').status(200).send(employees);
+            /*
+            setTimeout(()=>{
+                res.type('json').status(200).send(employees);
+            }, 5000);
+             */
         } catch (err) {
             next(err);
         }
